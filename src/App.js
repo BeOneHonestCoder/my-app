@@ -1,25 +1,258 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import axios from 'axios';
+import {
+  Container, 
+  Box, 
+  Typography, 
+  Button, 
+  Table, 
+  TableBody,
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper,
+  TextField, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle,
+  Pagination, 
+  InputAdornment, 
+  IconButton
+} from '@mui/material';
+import { Add, Edit, Delete, Search, Close } from '@mui/icons-material';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const API_URL = 'http://localhost:8080/mysql/users';
+
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: [],
+      open: false,
+      current: null,
+      form: { name: '', birthday: '' },
+      errors: {},
+      searchTerm: '',
+      pagination: { page: 1, rowsPerPage: 5 }
+    };
+  }
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  fetchData = async () => {
+    this.setState({ loading: true, error: null });
+    try {
+      const response = await axios.get(API_URL);
+      this.setState({ 
+        data: response.data,
+        loading: false
+      });
+    } catch (error) {
+      this.setState({ 
+        error: 'Failed to fetch data: ' + error.message,
+        loading: false
+      });
+    }
+  };
+
+  get filteredData() {
+    return this.state.data.filter(item =>
+      item.name.toLowerCase().includes(this.state.searchTerm.toLowerCase()) ||
+      item.birthday.toLowerCase().includes(this.state.searchTerm.toLowerCase())
+    );
+  }
+
+  get paginatedData() {
+    const { page, rowsPerPage } = this.state.pagination;
+    return this.filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  }
+
+  validateForm = () => {
+    const newErrors = {};
+    if (!this.state.form.name.trim()) newErrors.name = 'Name is required';
+    if (!this.state.form.birthday.trim()) {
+      newErrors.birthday = 'Birthday is required';
+    } else if (!/^\S+@\S+\.\S+$/.test(this.state.form.birthday)) {
+      newErrors.birthday = 'Birthday is invalid';
+    }
+    this.setState({ errors: newErrors });
+    return Object.keys(newErrors).length === 0;
+  };
+
+  handleOpen = () => this.setState({ open: true });
+  
+  handleClose = () => this.setState({
+    open: false, current: null, form: { name: '', birthday: '' }, errors: {}
+  });
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    if (!this.validateForm()) return;
+
+    if (this.state.current) {
+      this.setState(prev => ({
+        data: prev.data.map(item => 
+          item.id === prev.current.id ? { ...prev.form, id: prev.current.id } : item
+        )
+      }));
+    } else {
+      this.setState(prev => ({
+        data: [...prev.data, { ...prev.form, id: Date.now() }]
+      }));
+    }
+    this.handleClose();
+  };
+
+  handleDelete = (id) => {
+    this.setState(prev => ({
+      data: prev.data.filter(item => item.id !== id),
+      pagination: { ...prev.pagination, page: 1 }
+    }));
+  };
+
+  handleEdit = (item) => {
+    this.setState({ open: true, current: item, form: { name: item.name, birthday: item.birthday } });
+  };
+
+  handlePageChange = (e, page) => {
+    this.setState(prev => ({ pagination: { ...prev.pagination, page } }));
+  };
+
+  handleInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState(prev => ({ form: { ...prev.form, [name]: value } }));
+  };
+
+  handleSearchChange = (e) => {
+    this.setState({ 
+      searchTerm: e.target.value,
+      pagination: { ...this.state.pagination, page: 1 }
+    });
+  };
+
+  render() {
+    const { form, errors, pagination, open, searchTerm } = this.state;
+    const totalPages = Math.ceil(this.filteredData.length / pagination.rowsPerPage);
+
+    return (
+      <Container maxWidth="lg" sx={{ py: 3, px: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3
+        }}>
+          <Typography variant="h4">User Management</Typography>
+          <Button variant="contained" startIcon={<Add />} onClick={this.handleOpen}>
+            Add User
+          </Button>
+        </Box>
+
+        <TextField
+          fullWidth
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={this.handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <IconButton onClick={() => this.setState({ searchTerm: '' })}>
+                  <Close />
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+          sx={{ mb: 3 }}
+        />
+
+        <TableContainer component={Paper} elevation={3}>
+          <Table>
+            <TableHead sx={{ bgcolor: 'primary.main' }}>
+              <TableRow>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Birthday</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>CreateTS</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.paginatedData.map(item => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.id}</TableCell>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.birthday}</TableCell>
+                  <TableCell>{item.createts}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => this.handleEdit(item)}>
+                      <Edit color="primary" />
+                    </IconButton>
+                    <IconButton onClick={() => this.handleDelete(item.id)}>
+                      <Delete color="error" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Pagination
+            count={totalPages}
+            page={pagination.page}
+            onChange={this.handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+
+        <Dialog open={open} onClose={this.handleClose}>
+          <DialogTitle>{this.state.current ? 'Edit User' : 'Add User'}</DialogTitle>
+          <form onSubmit={this.handleSubmit}>
+            <DialogContent>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Name"
+                name="name"
+                value={form.name}
+                onChange={this.handleInputChange}
+                error={!!errors.name}
+                helperText={errors.name}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Birthday"
+                name="birthday"
+                value={form.birthday}
+                onChange={this.handleInputChange}
+                error={!!errors.birthday}
+                helperText={errors.birthday}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose}>Cancel</Button>
+              <Button type="submit" variant="contained">
+                {this.state.current ? 'Update' : 'Create'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      </Container>
+    );
+  }
 }
 
 export default App;
