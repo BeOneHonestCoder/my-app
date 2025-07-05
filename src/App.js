@@ -1,29 +1,29 @@
 import React from 'react';
 import axios from 'axios';
 import {
-  Container, 
-  Box, 
-  Typography, 
-  Button, 
-  Table, 
+  Container,
+  Box,
+  Typography,
+  Button,
+  Table,
   TableBody,
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Paper,
-  TextField, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
   DialogTitle,
-  Pagination, 
-  InputAdornment, 
+  Pagination,
+  InputAdornment,
   IconButton
 } from '@mui/material';
 import { Add, Edit, Delete, Search, Close } from '@mui/icons-material';
 
-const API_URL = 'http://localhost:8080/mysql/users';
+const API_URL = process.env.REACT_APP_API_URL;
 
 class App extends React.Component {
   constructor(props) {
@@ -47,12 +47,13 @@ class App extends React.Component {
     this.setState({ loading: true, error: null });
     try {
       const response = await axios.get(API_URL);
-      this.setState({ 
+      console.log(response);
+      this.setState({
         data: response.data,
         loading: false
       });
     } catch (error) {
-      this.setState({ 
+      this.setState({
         error: 'Failed to fetch data: ' + error.message,
         loading: false
       });
@@ -76,7 +77,7 @@ class App extends React.Component {
     if (!this.state.form.name.trim()) newErrors.name = 'Name is required';
     if (!this.state.form.birthday.trim()) {
       newErrors.birthday = 'Birthday is required';
-    } else if (!/^\S+@\S+\.\S+$/.test(this.state.form.birthday)) {
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(this.state.form.birthday)) {
       newErrors.birthday = 'Birthday is invalid';
     }
     this.setState({ errors: newErrors });
@@ -84,34 +85,41 @@ class App extends React.Component {
   };
 
   handleOpen = () => this.setState({ open: true });
-  
+
   handleClose = () => this.setState({
     open: false, current: null, form: { name: '', birthday: '' }, errors: {}
   });
 
-  handleSubmit = (e) => {
+
+  handleSubmit = async (e) => {
     e.preventDefault();
     if (!this.validateForm()) return;
 
-    if (this.state.current) {
-      this.setState(prev => ({
-        data: prev.data.map(item => 
-          item.id === prev.current.id ? { ...prev.form, id: prev.current.id } : item
-        )
-      }));
-    } else {
-      this.setState(prev => ({
-        data: [...prev.data, { ...prev.form, id: Date.now() }]
-      }));
+    try {
+      if (this.state.current) {
+        await axios.put(`${API_URL}/${this.state.current.id}`, this.state.form);
+      } else {
+        await axios.post(API_URL, this.state.form);
+      }
+
+      this.fetchData();
+      this.handleClose();
+    } catch (error) {
+      this.setState({
+        error: `Failed to submit: ${error.response?.data?.message || error.message}`
+      });
     }
-    this.handleClose();
   };
 
-  handleDelete = (id) => {
-    this.setState(prev => ({
-      data: prev.data.filter(item => item.id !== id),
-      pagination: { ...prev.pagination, page: 1 }
-    }));
+  handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      this.fetchData();
+    } catch (error) {
+      this.setState({
+        error: `Failed to delete: ${error.response?.data?.message || error.message}`
+      });
+    }
   };
 
   handleEdit = (item) => {
@@ -128,7 +136,7 @@ class App extends React.Component {
   };
 
   handleSearchChange = (e) => {
-    this.setState({ 
+    this.setState({
       searchTerm: e.target.value,
       pagination: { ...this.state.pagination, page: 1 }
     });
@@ -140,9 +148,9 @@ class App extends React.Component {
 
     return (
       <Container maxWidth="lg" sx={{ py: 3, px: 2 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           mb: 3
         }}>
