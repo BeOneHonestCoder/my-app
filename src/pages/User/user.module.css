@@ -1,0 +1,86 @@
+/* src/pages/User/user.module.css */
+
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 64px);
+}
+
+.card {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleDecoration {
+  background-color: #1677ff;
+  width: 4px;
+  height: 24px;
+  border-radius: 2px;
+}
+
+.title {
+  margin: 0 !important;
+  font-weight: 700 !important;
+  color: #1a1a1a;
+}
+
+.searchInput {
+  width: 220px;
+}
+
+.idTag {
+  font-family: 'Monaco', 'Consolas', monospace;
+  background-color: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #595959;
+}
+
+.userName {
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.iconGray {
+  color: #bfbfbf;
+}
+
+.timeText {
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.editBtn {
+  color: #1677ff;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.formWrapper {
+  margin-top: 20px;
+}

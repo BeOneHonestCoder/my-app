@@ -1,0 +1,50 @@
+/* src/pages/Dashboard/dashboard.module.css */
+
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: calc(100vh - 64px);
+}
+
+.welcomeSection {
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  margin: 0 !important;
+  font-weight: 600 !important;
+}
+
+.statCard {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s;
+}
+
+.statCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Targeting Ant Design's internal content class specifically 
+  to replace the inline styles={{ content: { ... } }} 
+*/
+.statActive :global(.ant-statistic-content) {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.statTotal :global(.ant-statistic-content) {
+  color: #722ed1;
+  font-weight: 600;
+}
+
+.statHealth :global(.ant-statistic-content) {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.statUptime :global(.ant-statistic-content) {
+  color: #fa8c16;
+  font-weight: 600;
+}
