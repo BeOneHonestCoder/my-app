@@ -7,44 +7,80 @@
 }
 
 .welcomeSection {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.pageTitle {
+.titleGap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcomeTitle {
   margin: 0 !important;
-  font-weight: 600 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+  color: #1a1a1a;
+}
+
+.verifiedIcon {
+  font-size: 24px;
+  color: #52c41a;
+}
+
+/* Statistics Grid */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .statCard {
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
 }
 
 .statCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* Targeting Ant Design's internal content class specifically 
-  to replace the inline styles={{ content: { ... } }} 
-*/
-.statActive :global(.ant-statistic-content) {
-  color: #1677ff;
-  font-weight: 600;
+.iconWrapper {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
 }
 
-.statTotal :global(.ant-statistic-content) {
-  color: #722ed1;
-  font-weight: 600;
+/* Icon Color Themes */
+.iconBlue { background-color: #e6f7ff; color: #1890ff; }
+.iconGreen { background-color: #f6ffed; color: #52c41a; }
+.iconOrange { background-color: #fff7e6; color: #fa8c16; }
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
 }
 
-.statHealth :global(.ant-statistic-content) {
-  color: #52c41a;
-  font-weight: 600;
+.statLabel {
+  color: #8c8c8c;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.statUptime :global(.ant-statistic-content) {
-  color: #fa8c16;
-  font-weight: 600;
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
 }

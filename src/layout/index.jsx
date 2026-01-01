@@ -1,22 +1,21 @@
-import React from 'react';
-import { Layout, Menu, Typography, Avatar, Space, Badge, Breadcrumb, message } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Menu, Breadcrumb } from 'antd';
 import { 
   DashboardOutlined, 
   UserOutlined, 
-  ApiOutlined, 
-  BellOutlined,
-  LogoutOutlined 
+  ApiOutlined 
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import styles from './layout.module.css';
 
 const { Header, Sider, Content } = Layout;
-const { Text } = Typography;
 
 const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
+  // Mapping path to English labels for Breadcrumbs
   const breadcrumbNameMap = {
     '/': 'Dashboard',
     '/user': 'User Management',
@@ -29,16 +28,19 @@ const MainLayout = () => {
     { key: '/wiremock', icon: <ApiOutlined />, label: 'Wiremock Management' },
   ];
 
-  const handleLogout = () => {
-    message.success('Logged out successfully');
-  };
-
   return (
     <Layout className={styles.mainLayout}>
-      <Sider width={240} theme="dark" className={styles.sider}>
+      <Sider 
+        width={240} 
+        theme="dark" 
+        className={styles.sider}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+      >
         <div className={styles.logo}>
           <div className={styles.logoIcon}>P</div>
-          <span className={styles.logoText}>Portal-Demo</span>
+          {!collapsed && <span className={styles.logoText}>Portal-Demo</span>}
         </div>
         <Menu
           theme="dark"
@@ -50,35 +52,14 @@ const MainLayout = () => {
       </Sider>
       
       <Layout>
+        {/* Simplified Header with shadow and border */}
         <Header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <Breadcrumb 
-              items={[
-                { title: 'Home' },
-                { title: breadcrumbNameMap[location.pathname] || 'Current' }
-              ]} 
-            />
-          </div>
-          
-          <div className={styles.headerRight}>
-            <Space size={24}>
-              <Badge count={3} dot>
-                <BellOutlined className={styles.headerIcon} />
-              </Badge>
-              <Space className={styles.userInfo}>
-                <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1677ff' }} />
-                {/* Fixed: Removed 'block' attribute to eliminate React warning */}
-                <div className={styles.userText}>
-                  <Text strong className={styles.userNameText}>Admin</Text>
-                  <Text type="secondary" className={styles.userRoleText}>System Manager</Text>
-                </div>
-              </Space>
-              <LogoutOutlined 
-                className={styles.logoutIcon} 
-                onClick={handleLogout} 
-              />
-            </Space>
-          </div>
+          <Breadcrumb 
+            items={[
+              { title: 'Home' },
+              { title: breadcrumbNameMap[location.pathname] || 'Current' }
+            ]} 
+          />
         </Header>
 
         <Content className={styles.content}>
