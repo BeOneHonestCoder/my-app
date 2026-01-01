@@ -19,9 +19,7 @@ const DEFAULT_TEMPLATE = {
   response: {
     status: 200,
     body: "{\"success\": true}",
-    headers: {
-      "Content-Type": "application/json"
-    }
+    headers: { "Content-Type": "application/json" }
   }
 };
 
@@ -41,8 +39,14 @@ const WiremockManager = () => {
     setLoading(true);
     try {
       const data = await WiremockApi.getAll();
-      setMappings(data);
-      setSelectedId(prevId => prevId ?? (data.length > 0 ? data[0].id : null));
+      const validData = Array.isArray(data) ? data : [];
+      setMappings(validData);
+      // Auto-select the first item if none selected
+      setSelectedId(prevId => prevId ?? (validData.length > 0 ? validData[0].id : null));
+    } catch (err) {
+      console.error("Fetch mappings failed:", err);
+      setMappings([]);
+      message.error("Failed to connect to WireMock server");
     } finally {
       setLoading(false);
     }
@@ -58,12 +62,12 @@ const WiremockManager = () => {
     try {
       const stubData = JSON.parse(newValue);
       await WiremockApi.create(stubData);
-      message.success('New mapping created in memory');
+      message.success('New mapping created successfully');
       setIsModalOpen(false);
       fetchMappings();
       setNewValue(JSON.stringify(DEFAULT_TEMPLATE, null, 2));
     } catch (e) {
-      message.error('Invalid JSON format');
+      message.error(e instanceof SyntaxError ? 'Invalid JSON format' : 'Create operation failed');
     }
   };
 
@@ -75,14 +79,14 @@ const WiremockManager = () => {
       setIsEditing(false);
       fetchMappings();
     } catch (e) {
-      message.error('Invalid JSON format');
+      message.error(e instanceof SyntaxError ? 'Invalid JSON format' : 'Update operation failed');
     }
   };
 
   const handleDeleteStub = async () => {
     try {
       await WiremockApi.delete(selectedId);
-      message.success('Mapping removed from memory');
+      message.success('Mapping removed from service');
       setSelectedId(null);
       fetchMappings();
     } catch (e) {
@@ -117,12 +121,13 @@ const WiremockManager = () => {
               icon={<PlusOutlined />} 
               onClick={() => setIsModalOpen(true)}
             />
-            <Button icon={<ReloadOutlined />} onClick={fetchMappings} />
+            <Button icon={<ReloadOutlined />} onClick={fetchMappings} loading={loading} />
           </div>
           
           <div className={styles.listContent}>
-            {loading ? <div className={styles.centered}><Spin /></div> : 
-              filteredMappings.length > 0 ? (
+            {/* FIX: Using Nesting Pattern for Spin to resolve 'tip' warning and provide better UX */}
+            <Spin spinning={loading} tip="Loading Mappings...">
+              {filteredMappings.length > 0 ? (
                 filteredMappings.map(item => (
                   <div 
                     key={item.id} 
@@ -133,10 +138,12 @@ const WiremockManager = () => {
                     <Text ellipsis className={styles.urlText}>{item.request?.urlPath || item.request?.url || '/'}</Text>
                   </div>
                 ))
-              ) : (
-                <div className={styles.centered}><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /></div>
-              )
-            }
+              ) : !loading && (
+                <div className={styles.centered}>
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Stubs Found" />
+                </div>
+              )}
+            </Spin>
           </div>
         </div>
 
@@ -202,7 +209,9 @@ const WiremockManager = () => {
               </div>
             </div>
           ) : (
-            <div className={styles.centered}><Empty description="Select a stub to view configuration" /></div>
+            <div className={styles.centered}>
+              <Empty description="Select a stub to view configuration" />
+            </div>
           )}
         </div>
       </div>
@@ -215,6 +224,7 @@ const WiremockManager = () => {
         onCancel={() => setIsModalOpen(false)}
         width={750}
         okText="Create"
+        // FIX: Replaced deprecated destroyOnClose with destroyOnHidden
         destroyOnHidden={true}
       >
         <div style={{ marginBottom: '12px' }}>
