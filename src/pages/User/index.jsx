@@ -138,7 +138,7 @@ const UserPage = () => {
         <div className={styles.toolbar}>
           <div className={styles.titleWrapper}>
             <div className={styles.titleDecoration} />
-            <Title level={4} className={styles.title}>User Directory</Title>
+            <Title level={4} className={styles.title}>Users</Title>
           </div>
           
           <Space size="middle">

@@ -1,19 +1,23 @@
-import request from './request';
+import { userRequest as request } from './request';
 
-/**
- * User Module API
- * Endpoint: http://localhost:8080/api/v1/users
- */
 export const UserApi = {
-  // Get all users
+  /**
+   * Fetch all users from the database
+   */
   getAll: () => request.get('/users'),
 
-  // Create user
+  /**
+   * Create a new user record
+   */
   create: (data) => request.post('/users', data),
 
-  // Update user
+  /**
+   * Update user details by ID
+   */
   update: (id, data) => request.put(`/users/${id}`, data),
 
-  // Delete user
+  /**
+   * Delete a user record by ID
+   */
   delete: (id) => request.delete(`/users/${id}`),
 };
